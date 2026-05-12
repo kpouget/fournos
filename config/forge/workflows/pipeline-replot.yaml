@@ -1,0 +1,55 @@
+# Single-step pipeline: run only (no prepare, no cleanup).
+# Use on pre-configured clusters where setup/teardown is handled externally.
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: forge-replot
+  annotations:
+    fournos.dev/resolve-image: image-registry.openshift-image-registry.svc:5000/${NAMESPACE}/forge-core:main
+spec:
+  workspaces:
+    - name: artifacts
+  params:
+    - name: fjob-name
+      type: string
+    - name: fournos-namespace
+      type: string
+    - name: kubeconfig-secret
+      type: string
+  tasks:
+    - name: replot
+      taskRef:
+        name: forge-step
+      workspaces:
+        - name: artifacts
+          workspace: artifacts
+      params:
+        - name: fjob-name
+          value: "$(params.fjob-name)"
+        - name: fournos-namespace
+          value: "$(params.fournos-namespace)"
+        - name: kubeconfig-secret
+          value: "$(params.kubeconfig-secret)"
+        - name: job-step
+          value: caliper_replot
+        - name: job-step-name
+          value: 000__replot
+
+  finally:
+    - name: export-artifacts
+      taskRef:
+        name: forge-step
+      workspaces:
+        - name: artifacts
+          workspace: artifacts
+      params:
+        - name: fjob-name
+          value: "$(params.fjob-name)"
+        - name: fournos-namespace
+          value: "$(params.fournos-namespace)"
+        - name: kubeconfig-secret
+          value: "$(params.kubeconfig-secret)"
+        - name: job-step
+          value: export-artifacts
+        - name: job-step-name
+          value: 001__export-artifacts
