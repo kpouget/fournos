@@ -44,14 +44,16 @@ def base_labels(name: str, extra: dict[str, str] | None = None) -> dict[str, str
 
 
 def job_labels(spec: dict) -> dict[str, str]:
-    """Labels to propagate for a FournosJob spec: its owner, when set."""
+    """Labels to propagate for a FournosJob spec: its owner, when set.
+
+    The owner label is emitted even when sanitization empties it (the
+    original owner is preserved via ``job_annotations``); only a spec
+    with no owner at all produces no label.
+    """
     owner = spec.get("owner")
     if not owner:
         return {}
-    sanitized = sanitize_label_value(owner)
-    if not sanitized:
-        return {}
-    return {LABEL_OWNER: sanitized}
+    return {LABEL_OWNER: sanitize_label_value(owner)}
 
 
 def job_annotations(spec: dict) -> dict[str, str]:

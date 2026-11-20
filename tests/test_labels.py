@@ -81,8 +81,8 @@ class TestJobLabels:
         assert LABEL_OWNER in labels
         assert len(labels[LABEL_OWNER]) == 63
 
-    def test_all_invalid_owner_produces_no_label(self):
-        assert job_labels({"owner": "@@@"}) == {}
+    def test_all_invalid_owner_still_produces_label(self):
+        assert job_labels({"owner": "@@@"}) == {LABEL_OWNER: ""}
 
 
 class TestJobAnnotations:
